@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест на парней ♡</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #050005;
+  color: #fff0fb;
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+#app {
+  width: 100%;
+  max-width: 600px;
+  text-align: center;
+}
+h1, h2 { color: #ff4fd8; }
+h1 { font-size: clamp(25px, 6vw, 38px); }
+#counter { color: #ff4fd8; letter-spacing: 2px; }
+#question { font-size: 23px; line-height: 1.4; margin: 25px 0; }
+#answers { display: grid; gap: 14px; }
+.answer, .mainbtn {
+  width: 100%;
+  border: 2px solid #ff1493;
+  border-radius: 12px;
+  padding: 15px 12px;
+  background: #080008;
+  color: #fff0fb;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 5px #ff1493, 0 0 12px #ff1493,
+              inset 0 0 5px #ff149344;
+  transition: background .12s, box-shadow .12s, transform .12s;
+}
+.answer:hover, .mainbtn:hover {
+  box-shadow: 0 0 8px #ff1493, 0 0 20px #ff1493,
+              inset 0 0 8px #ff149355;
+}
+.answer:active, .mainbtn:active {
+  background: #650044;
+  transform: scale(.98);
+}
+#back { margin-top: 22px; }
+#progress {
+  height: 5px;
+  background: #35102b;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 20px;
+}
+#bar {
+  height: 100%;
+  width: 0;
+  background: #ff4fd8;
+  box-shadow: 0 0 10px #ff1493;
+  transition: width .2s;
+}
+.small { color: #cba9c2; line-height: 1.6; }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const questions = [
+["Какой парень тебя цепляет?", [
+"На гелике, который купил сам",
+"На гелике, который купили родители",
+"Заботливый, всегда рядом",
+"Просто красивый, без заморочек"]],
+["Твой идеальный вечер?", [
+"Ночная поездка по городу",
+"Ресторан, где меню без цен",
+"Фильм, плед и вкусняшки",
+"Я красивая, он красивый — уже праздник"]],
+["Он пишет: «Я занят». Твои действия?", [
+"Поняла, у меня тоже есть дела",
+"Следствие началось: занят чем и кем?",
+"Жду, когда сам напишет",
+"Уже забыла, как его зовут"]],
+["Что важнее всего в парне?", [
+"Деньги и амбиции",
+"Юмор, чтобы я не скучала",
+"Забота и поступки",
+"Внешность. Не буду врать"]],
+["Какой поступок тебя впечатлит?", [
+"Сам заработал и чего-то добился",
+"Помнит мелочи, которые я говорила",
+"Приехал ко мне, даже если далеко",
+"Красиво выглядит и красиво говорит"]],
+["Твой красный флаг?", [
+"Понтуется чужими деньгами",
+"Не умеет смеяться над собой",
+"Контролирует каждый мой шаг",
+"Красивый, но характер как у табуретки"]],
+["Он лайкнул фото другой девушки…", [
+"Мне всё равно, я не полиция",
+"Посмотрю, кто она такая",
+"Спокойно поговорю, если меня тревожит",
+"Лайкну кому-нибудь в ответ. Баланс"]],
+["Какой парень точно не твой вариант?", [
+"Много понтов, ноль достижений",
+"Скучный, даже мемы не смешные",
+"Холодный и безразличный",
+"Самовлюблённый красавчик"]],
+["Он подарил тебе цветы…", [
+"И исполнил ещё одну мою хотелку",
+"Приложил смешную записку",
+"Просто потому, что вспомнил обо мне",
+"Главное, чтобы букет был красивый"]],
+["Что хочешь чувствовать рядом с ним?", [
+"Уверенность в его целях",
+"Что с ним никогда не скучно",
+"Спокойствие, любовь и заботу",
+"Что мы самая красивая пара"]]
+];
+
+const types = [
+{
+name: "Девушка с высокими стандартами 👑",
+desc: "Тебя цепляют амбиции и уверенность. Но пусть парень не только красиво живёт, а ещё и сам чего-нибудь добивается."
+},
+{
+name: "Охотница за вайбом 💋",
+desc: "Тебе нужен тот, с кем весело, легко и можно смеяться до слёз. Скука — твой главный враг."
+},
+{
+name: "Романтичная, но не наивная 💗",
+desc: "Ты ценишь внимание, заботу и поступки. Тебе нужен человек, рядом с которым не приходится выпрашивать любовь."
+},
+{
+name: "Эстет с характером 🖤",
+desc: "Внешность для тебя имеет значение, и ты не собираешься это отрицать. Но красивое лицо ещё не заменяет мозги."
+}
+];
+
+let current = -1;
+let answers = [];
+
+function render() {
+  const app = document.getElementById("app");
+
+  if (current === -1) {
+    app.innerHTML = `
+      <div style="font-size:58px;color:#ff4fd8">♡</div>
+      <h1>ТЕСТ НА ПАРНЕЙ</h1>
+      <p class="small">Какой типаж тебе подходит?</p>
+      <p class="small">10 вопросов. Отвечай честно.<br>Мы никому не расскажем 👀</p>
+      <button class="mainbtn" id="start">НАЧАТЬ ТЕСТ ♡</button>`;
+    document.getElementById("start").onclick = () => {
+      current = 0;
+      answers = [];
+      render();
+    };
+    return;
+  }
+
+  if (current >= questions.length) {
+    const scores = [0, 0, 0, 0];
+    answers.forEach(a => scores[a]++);
+    const max = Math.max(...scores);
+    const winner = scores.indexOf(max);
+    app.innerHTML = `
+      <div style="font-size:60px;color:#ff4fd8">♛</div>
+      <p id="counter">ТВОЙ РЕЗУЛЬТАТ</p>
+      <h2>${types[winner].name}</h2>
+      <p class="small">${types[winner].desc}</p>
+      <p class="small">Твой главный тип ответов: ${max} из 10 ♡</p>
+      <button class="mainbtn" id="again">ПРОЙТИ ЕЩЁ РАЗ ↻</button>`;
+    document.getElementById("again").onclick = () => {
+      current = -1;
+      answers = [];
+      render();
+    };
+    return;
+  }
+
+  const [q, opts] = questions[current];
+  app.innerHTML = `
+    <div id="counter">♡ ВОПРОС ${current + 1} / ${questions.length}</div>
+    <div id="progress"><div id="bar"></div></div>
+    <div id="question"></div>
+    <div id="answers"></div>
+    <button class="mainbtn" id="back" style="max-width:180px">← НАЗАД</button>`;
+  document.getElementById("question").textContent = q;
+  document.getElementById("bar").style.width =
+    ((current + 1) / questions.length * 100) + "%";
+
+  const box = document.getElementById("answers");
+  opts.forEach((opt, i) => {
+    const b = document.createElement("button");
+    b.className = "answer";
+    b.textContent = opt;
+    b.onclick = () => {
+      answers[current] = i;
+      current++;
+      render();
+    };
+    box.appendChild(b);
+  });
+
+  const back = document.getElementById("back");
+  if (current === 0) {
+    back.style.visibility = "hidden";
+  } else {
+    back.onclick = () => {
+      current--;
+      render();
+    };
+  }
+}
+
+render();
+</script>
+</body>
+</html>
